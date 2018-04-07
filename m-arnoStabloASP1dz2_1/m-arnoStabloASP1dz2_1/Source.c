@@ -51,6 +51,16 @@ TreeNode *pop(StackTreeNode *stack) {
 
 #pragma endregion
 
+int getHeightOfTree(TreeNode *root) {
+	TreeNode *current = root;
+	int height = 0;
+	while (current != NULL) {
+		height++;
+		current = current->children[0];
+	}
+	return height;
+}
+
 int main() {
 
 	return 0;
