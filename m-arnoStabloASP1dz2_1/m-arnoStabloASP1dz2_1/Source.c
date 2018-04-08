@@ -58,12 +58,16 @@ int readInt() {
 }
 #pragma endregion
 
-#pragma region STACK_IMPLEMENTATION
-
 typedef struct StackTreeNodeStruct {
 	TreeNode *treeNode;
 	struct StackTreeNodeStruct *next;
 } StackTreeNode;
+
+#pragma region STACK_FUNCTIONS_IMPLEMENTATION
+
+int isEmptyStack(StackTreeNode *stack) {
+	return (stack == NULL);
+}
 
 StackTreeNode *allocateStackNode() {
 	StackTreeNode *node;
@@ -85,7 +89,7 @@ int push(StackTreeNode *stack, TreeNode *elem) {
 TreeNode *pop(StackTreeNode *stack) {
 	StackTreeNode *old;
 	TreeNode *elem = NULL;
-	if (stack != NULL) {
+	if (!isEmptyStack(stack)) {
 		old = stack;
 		stack = stack->next;
 		elem = old->treeNode;
@@ -95,6 +99,8 @@ TreeNode *pop(StackTreeNode *stack) {
 }
 
 #pragma endregion
+
+#pragma region TREE_FUNCTIONS
 
 TreeNode *allocateNewNode(int degreeOfTree) {
 	TreeNode *temporary;
@@ -139,6 +145,32 @@ int getHeightOfTree(TreeNode *root) {
 		current = current->children[0];
 	}
 	return height;
+}
+
+#pragma endregion
+
+
+/*
+*	TODO:
+*	Check if preorder traversal works
+*/
+void preorderTraverseTree(TreeNode *root, int degreeOfTree, void(*processNode)(TreeNode *)) {
+	StackTreeNode *stack;
+	TreeNode *current, *next;
+	int i;
+	int flag;
+	flag = push(stack, root);
+	while (!isEmptyStack(stack)) {
+		current = pop(stack);
+		while (current != NULL) {
+			for (i = degreeOfTree - 1; i > 0; i--) {
+				flag = push(stack, current->children[i]);
+			}
+			next = current->children[0];
+			processNode(current);
+		}
+	}
+	return;
 }
 
 void printMenu() {
