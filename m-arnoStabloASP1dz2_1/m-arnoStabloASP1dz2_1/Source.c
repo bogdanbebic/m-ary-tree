@@ -13,6 +13,7 @@ typedef struct TreeStruct {
 	int height;
 } Tree;
 
+
 #pragma region INT_READING_FUNCTIONS
 
 #define MAX_LINE 100
@@ -59,6 +60,7 @@ int readInt() {
 }
 #pragma endregion
 
+
 typedef struct StackTreeNodeStruct {
 	TreeNode *treeNode;
 	struct StackTreeNodeStruct *next;
@@ -101,6 +103,69 @@ TreeNode *pop(StackTreeNode **stack) {
 }
 
 #pragma endregion
+
+
+typedef struct QueueTreeNodeStruct {
+	TreeNode *treeNode;
+	struct QueueTreeNodeStruct *next;
+} QueueTreeNode;
+
+typedef struct QueueStruct {
+	QueueTreeNode *start;
+	QueueTreeNode *end;
+} Queue;
+
+#pragma region QUEUE_FUNCTIONS_IMPLEMENTATION
+
+int isEmptyQueue(Queue *queue) {
+	return (queue->start == NULL);
+}
+
+QueueTreeNode *allocateQueueNode() {
+	QueueTreeNode *node;
+	node = malloc(sizeof(QueueTreeNode));
+	return node;
+}
+
+void insertToQueue(Queue *queue, TreeNode *elem) {
+	QueueTreeNode *node;
+	node = allocateQueueNode();
+	if (node == NULL) {
+		return;
+	}
+	node->next = NULL;
+	node->treeNode = elem;
+	if (queue->end == NULL) {
+		queue->start = queue->end = node;
+	}
+	else {
+		queue->end->next = node;
+	}
+	return;
+}
+
+TreeNode *deleteFromQueue(Queue *queue) {
+	QueueTreeNode *old;
+	TreeNode *elem = NULL;
+	if (!isEmptyQueue(queue)) {
+		old = queue->start;
+		queue->start = queue->start->next;
+		elem = old->treeNode;
+		free(old);
+	}
+	return elem;
+}
+
+TreeNode *topOfQueue(Queue *queue) {
+	TreeNode *elem = NULL;
+	if (!isEmptyQueue(queue)) {
+		elem = queue->start->treeNode;
+	}
+	return elem;
+}
+
+#pragma endregion
+
 
 #pragma region TREE_NODE_ALLOCATION_FUNCTIONS
 
@@ -161,6 +226,9 @@ void preorderTraverseTree(TreeNode *root, int degreeOfTree, void(*processNode)(T
 	TreeNode *current, *next;
 	int i;
 	int flag;
+	if (root == NULL) {
+		return;
+	}
 	flag = push(&stack, root);
 	while (!isEmptyStack(&stack)) {
 		current = pop(&stack);
@@ -190,6 +258,16 @@ void outputTreePreodrer(TreeNode *root, int degreeOfTree) {
 	return;
 }
 
+void deallocateTreeNode(TreeNode *node) {
+	free(node);
+	return;
+}
+
+void deallocateTreePreorder(TreeNode *root, int degreeOfTree) {
+	preorderTraverseTree(root, degreeOfTree, deallocateTreeNode);
+	return;
+}
+
 void printMenu() {
 	printf("1. Create tree of degree m\n");
 	printf("2. Insert new node to tree\n");
@@ -215,24 +293,32 @@ int main() {
 		menuOption = readInt();
 		switch (menuOption) {
 		case 1:
-			/* TODO: if tree exists, deallocation */
+			if (tree.root == NULL) {
+				deallocateTreePreorder(tree.root, tree.maxNumberOfChildren);
+				tree.root = NULL;
+			}
 			createTree(&tree);
 			break;
 		case 2:
-			/* TODO: implement */
+			/* TODO: implement insertion of new node to tree */
 			break;
 		case 3:	// Outputs preorder traversal of tree
-			outputTreePreodrer(tree.root, tree.maxNumberOfChildren);
+			if (tree.root != NULL) {
+				outputTreePreodrer(tree.root, tree.maxNumberOfChildren);
+			}
+			else {
+				printf("There is no tree\n");
+			}
 			break;
 		case 4:	// Outputs height of tree
 			printf("Tree height: %d\n", getHeightOfTree(tree.root));
 			break;
 		case 5:
-			/* TODO: implement */
+			deallocateTreePreorder(tree.root, tree.maxNumberOfChildren);
+			tree.root = NULL;
 			break;
 		case 0:	// Exit program
-			/* TODO: deallocation */
-			free(tree.root);
+			deallocateTreePreorder(tree.root, tree.maxNumberOfChildren);
 			exit(0);
 		default:
 			break;
