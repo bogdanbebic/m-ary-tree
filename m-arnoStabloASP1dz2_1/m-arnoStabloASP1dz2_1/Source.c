@@ -14,6 +14,7 @@ typedef struct TreeStruct {
 } Tree;
 
 #pragma region INT_READING_FUNCTIONS
+
 #define MAX_LINE 100
 
 int isCorrectIntInput(char *s) {
@@ -65,8 +66,8 @@ typedef struct StackTreeNodeStruct {
 
 #pragma region STACK_FUNCTIONS_IMPLEMENTATION
 
-int isEmptyStack(StackTreeNode *stack) {
-	return (stack == NULL);
+int isEmptyStack(StackTreeNode **stack) {
+	return (*stack == NULL);
 }
 
 StackTreeNode *allocateStackNode() {
@@ -75,23 +76,24 @@ StackTreeNode *allocateStackNode() {
 	return node;
 }
 
-int push(StackTreeNode *stack, TreeNode *elem) {
+int push(StackTreeNode **stack, TreeNode *elem) {
 	StackTreeNode *node;
 	node = allocateStackNode();
 	if (node == NULL) {
 		return 0;
 	}
 	node->treeNode = elem;
-	node->next = stack;
+	node->next = *stack;
+	*stack = node;
 	return 1;
 }
 
-TreeNode *pop(StackTreeNode *stack) {
+TreeNode *pop(StackTreeNode **stack) {
 	StackTreeNode *old;
 	TreeNode *elem = NULL;
 	if (!isEmptyStack(stack)) {
-		old = stack;
-		stack = stack->next;
+		old = *stack;
+		*stack = (*stack)->next;
 		elem = old->treeNode;
 		free(old);
 	}
@@ -100,7 +102,7 @@ TreeNode *pop(StackTreeNode *stack) {
 
 #pragma endregion
 
-#pragma region TREE_FUNCTIONS
+#pragma region TREE_NODE_ALLOCATION_FUNCTIONS
 
 TreeNode *allocateNewNode(int degreeOfTree) {
 	TreeNode *temporary;
@@ -127,13 +129,15 @@ void newNodeInit(TreeNode *node, int degreeOfTree) {
 	return;
 }
 
+#pragma endregion
+
 void createTree(Tree *tree) {
 	printf("Input degree of tree: ");
 	tree->maxNumberOfChildren = readInt();
-	/*
-	*	TODO:
-	*	Implement root allocation
-	*/
+	tree->root = allocateNewNode(tree->maxNumberOfChildren);
+	newNodeInit(tree->root, tree->maxNumberOfChildren);
+	printf("Input value for the root node: ");
+	tree->root->data = readInt();
 	return;
 }
 
@@ -147,29 +151,42 @@ int getHeightOfTree(TreeNode *root) {
 	return height;
 }
 
-#pragma endregion
-
-
 /*
 *	TODO:
 *	Check if preorder traversal works
+*	This probably works
 */
 void preorderTraverseTree(TreeNode *root, int degreeOfTree, void(*processNode)(TreeNode *)) {
-	StackTreeNode *stack;
+	StackTreeNode *stack = NULL;
 	TreeNode *current, *next;
 	int i;
 	int flag;
-	flag = push(stack, root);
-	while (!isEmptyStack(stack)) {
-		current = pop(stack);
+	flag = push(&stack, root);
+	while (!isEmptyStack(&stack)) {
+		current = pop(&stack);
 		while (current != NULL) {
 			for (i = degreeOfTree - 1; i > 0; i--) {
-				flag = push(stack, current->children[i]);
+				if (current->children[i] != NULL) {
+					flag = push(&stack, current->children[i]);
+				}
 			}
 			next = current->children[0];
 			processNode(current);
+			current = next;
 		}
 	}
+	return;
+}
+
+void outputTreeNode(TreeNode *node) {
+	printf("%d ", node->data);
+	return;
+}
+
+void outputTreePreodrer(TreeNode *root, int degreeOfTree) {
+	printf("Preorder traversal of tree:\n");
+	preorderTraverseTree(root, degreeOfTree, outputTreeNode);
+	printf("\n");
 	return;
 }
 
@@ -197,14 +214,25 @@ int main() {
 		printMenu();
 		menuOption = readInt();
 		switch (menuOption) {
-		/*
-		*	TODO:
-		*	Implement all menu options
-		*	Implement all menu options functions
-		*	Implement allocation check and deallocation
-		*/
+		case 1:
+			/* TODO: if tree exists, deallocation */
+			createTree(&tree);
+			break;
+		case 2:
+			/* TODO: implement */
+			break;
+		case 3:	// Outputs preorder traversal of tree
+			outputTreePreodrer(tree.root, tree.maxNumberOfChildren);
+			break;
+		case 4:	// Outputs height of tree
+			printf("Tree height: %d\n", getHeightOfTree(tree.root));
+			break;
+		case 5:
+			/* TODO: implement */
+			break;
 		case 0:	// Exit program
 			/* TODO: deallocation */
+			free(tree.root);
 			exit(0);
 		default:
 			break;
