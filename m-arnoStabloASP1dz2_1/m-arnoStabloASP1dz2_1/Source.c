@@ -202,6 +202,10 @@ void newNodeInit(TreeNode *node, int degreeOfTree) {
 void createTree(Tree *tree) {
 	printf("Input degree of tree: ");
 	tree->maxNumberOfChildren = readInt();
+	while (tree->maxNumberOfChildren <= 0) {
+		printf("Tree must have positive degree: ");
+		tree->maxNumberOfChildren = readInt();
+	}
 	tree->root = allocateNewNode(tree->maxNumberOfChildren);
 	newNodeInit(tree->root, tree->maxNumberOfChildren);
 	printf("Input value for the root node: ");
