@@ -139,7 +139,8 @@ void insertToQueue(Queue *queue, TreeNode *elem) {
 		queue->start = queue->end = node;
 	}
 	else {
-		queue->end->next = node;
+		queue->end->next = node;	// TODO: fix
+		queue->end = node;
 	}
 	return;
 }
@@ -196,6 +197,8 @@ void newNodeInit(TreeNode *node, int degreeOfTree) {
 
 #pragma endregion
 
+#pragma region TREE_FUNCTIONS
+
 void createTree(Tree *tree) {
 	printf("Input degree of tree: ");
 	tree->maxNumberOfChildren = readInt();
@@ -216,11 +219,6 @@ int getHeightOfTree(TreeNode *root) {
 	return height;
 }
 
-/*
-*	TODO:
-*	Check if preorder traversal works
-*	This probably works
-*/
 void preorderTraverseTree(TreeNode *root, int degreeOfTree, void(*processNode)(TreeNode *)) {
 	StackTreeNode *stack = NULL;
 	TreeNode *current, *next;
@@ -268,6 +266,23 @@ void deallocateTreePreorder(TreeNode *root, int degreeOfTree) {
 	return;
 }
 
+void insertNodeToTree(TreeNode *node, int degreeOfTree, Queue *queue) {
+	TreeNode *elem;
+	int i;
+	elem = topOfQueue(queue);
+	while (elem->children[degreeOfTree - 1] != NULL) {
+		deleteFromQueue(queue);
+		elem = topOfQueue(queue);
+	}
+	for (i = 0; elem->children[i] != NULL; i++);
+	elem->children[i] = node;
+	insertToQueue(queue, node);
+	return;
+}
+
+#pragma endregion
+
+
 void printMenu() {
 	printf("1. Create tree of degree m\n");
 	printf("2. Insert new node to tree\n");
@@ -281,7 +296,11 @@ void printMenu() {
 
 int main() {
 	Tree tree;
+	TreeNode *node;
 	int menuOption;
+	Queue q;
+	q.start = NULL;
+	q.end = NULL;
 
 	tree.root = NULL;
 	tree.numberOfNodes = 0;
@@ -298,9 +317,19 @@ int main() {
 				tree.root = NULL;
 			}
 			createTree(&tree);
+			insertToQueue(&q, tree.root);
 			break;
 		case 2:
-			/* TODO: implement insertion of new node to tree */
+			if (tree.root != NULL) {
+				node = allocateNewNode(tree.maxNumberOfChildren);
+				newNodeInit(node, tree.maxNumberOfChildren);
+				printf("Input value for new node: ");
+				node->data = readInt();
+				insertNodeToTree(node, tree.maxNumberOfChildren, &q);
+			}
+			else {
+				printf("There is no tree\n");
+			}
 			break;
 		case 3:	// Outputs preorder traversal of tree
 			if (tree.root != NULL) {
