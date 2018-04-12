@@ -139,7 +139,7 @@ void insertToQueue(Queue *queue, TreeNode *elem) {
 		queue->start = queue->end = node;
 	}
 	else {
-		queue->end->next = node;	// TODO: fix
+		queue->end->next = node;
 		queue->end = node;
 	}
 	return;
